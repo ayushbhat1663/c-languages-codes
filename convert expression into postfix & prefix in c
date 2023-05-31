@@ -1,0 +1,188 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+struct Stack{
+char data;
+struct Stack *next;
+}*top = NULL, *pstart = NULL;
+char str[50];
+int main(int argc, char **argv){
+printf("Enter infix expression: ");
+gets(str);
+printf("\n\nEquivalent postfix expression is: ");
+intopostfix(str);
+printf("\n\nEquivalent prefix expression is: ");
+intoprefix(str);
+printf("\n");
+return 0;
+}
+/* function for insert operation */
+void insert(char ch){
+    struct Stack *ptr,*newNode;
+    newNode = (struct Stack *)malloc(sizeof(struct Stack));
+    newNode->next = NULL;
+    newNode->data = ch;
+    ptr = pstart;
+    if(pstart == NULL){
+    pstart = newNode;
+    }
+    else{
+    while(ptr->next != NULL)
+    ptr = ptr->next;
+    ptr->next = newNode;
+    }
+}
+/* function for push operation */
+void push(char symbol){
+    struct Stack *ptr;
+        ptr = (struct Stack *)malloc(sizeof(struct Stack));
+        ptr->data = symbol;
+        if(top == NULL){
+            top = ptr;
+            ptr->next = NULL;
+        }
+        else{
+            ptr->next = top;
+            top = ptr;
+    }
+}
+char pop(){
+    struct Stack *ptr1;
+    char ch1;
+        if(top == NULL){
+        printf("Stack underflow\n");
+        return 0;
+        }
+        else{
+            ptr1 = top;
+            top = top->next;
+            ch1 = ptr1->data;
+            free(ptr1);
+            ptr1 = NULL;
+            return ch1;
+        }
+}
+/* function for display display operation */
+void displaypost(){
+    struct Stack *temp;
+        if(pstart == NULL)
+            printf("");
+        else{           
+            temp = pstart;
+        while(temp != NULL){
+        printf("%c",temp->data);
+        temp = temp->next;
+        }
+    }
+}
+/*function for precedence */
+int precedence(char ch){
+        if(ch   ==  '^'){
+        return (5);
+        }
+        else if(ch == '*' || ch == '/'){
+        return (4);
+        }
+        else if(ch == '+' || ch == '-'){
+        return (3);
+        }
+        else{
+        return (2);
+        }
+}
+ /*function for converting infix to postfix */
+void intopostfix(char str[]){
+    int length;
+    int index = 0;
+    char symbol, temp;
+    length = strlen(str);
+    while(length > index)
+    {
+        symbol = str[index];
+        switch(symbol){
+        case '(':
+        push(symbol);
+        break;
+        case ')':
+        temp = pop();
+        while(temp != '('){
+        insert(temp);
+        temp = pop();
+        }
+        break;
+        case '^':
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        if(top == NULL){
+            push(symbol);
+        }
+        else{
+        while(top != NULL && (precedence(top->data) >= precedence(symbol))){
+            temp = pop();
+            insert(temp);
+            }
+            push(symbol);
+        }   
+            break;
+            default:
+            insert(symbol);
+         }
+         index = index + 1;
+    }
+        while(top != NULL){
+        temp = pop();
+        insert(temp);
+    }
+        displaypost();
+        return;
+}
+/*function to convert infix to prefix */
+void intoprefix(char str[]){
+    int length;
+    int index = 0;
+    char symbol, temp;
+    length = strlen(str);
+    while(length > index)
+    {
+        symbol = str[index];
+        switch(symbol)
+        case ')':
+        temp = pop();
+        break;
+        case '(':
+        push(symbol);
+        while(temp != ')'){
+        insert(temp);
+        temp = pop();
+        }
+        break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '^':
+        if(top == NULL){
+            push(symbol);
+        }
+        else{
+        while(top != NULL && (precedence(top->data) <= precedence(symbol))){
+            temp = pop();
+            insert(temp);
+            }
+            push(symbol);
+        }   
+            break;
+            default:
+            insert(symbol);
+         }
+         index = index + 1;
+    }
+        while(top != NULL){
+        temp = pop();
+        insert(temp);
+    }
+        displaypost();
+        return;
+}
