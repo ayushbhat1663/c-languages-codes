@@ -1,0 +1,243 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX_PAGES 20
+// Function to simulate FIFO page replacement algorithm
+void fifo(int pages[], int n, int capacity) {
+int page_queue[capacity]; // Circular queue to store pages
+int front = 0, rear = 0; // Pointers for front and rear of the queue
+int page_faults = 0; // Counter for page faults
+for (int i = 0; i < n; ++i) {
+int page = pages[i];
+int found = 0;
+// Check if the page is already in the queue
+for (int j = 0; j < capacity; ++j) {
+if (page_queue[j] == page) {
+found = 1;
+break;
+}
+}
+if (!found) {
+++page_faults;
+// If the queue is full, replace the front page
+if (rear == capacity) {
+rear = 0; // Wrap arond in a circular queue
+}
+page_queue[rear++] = page; // Add the new page to the queue
+}
+}
+printf("FIFO Page Faults: %d\n", page_faults);
+}
+
+// Function to simulate LRU page replacement algorithm
+
+void lru(int pages[], int n, int capacity) {
+
+int page_order[MAX_PAGES]; // Array to store the order of pages
+
+int page_faults = 0; // Counter for page faults
+
+for (int i = 0; i < n; ++i) {
+
+int page = pages[i];
+
+int found = 0;
+
+// Check if the page is already in the order array
+
+for (int j = 0; j < capacity; ++j) {
+
+if (page_order[j] == page) {
+
+found = 1;
+
+break;
+
+}
+
+}
+
+if (!found) {
+
+++page_faults;
+
+// If the array is full, shift all elements to the left
+
+if (capacity == n) {
+
+for (int k = 0; k < capacity - 1; ++k) {
+
+page_order[k] = page_order[k + 1];
+
+}
+
+}
+
+page_order[capacity - 1] = page; // Add the new page to the end of the array
+
+} else {
+
+// If the page is already in the array, move it to the end
+
+for (int k = 0; k < capacity; ++k) {
+
+if (page_order[k] == page) {
+
+for (int l = k; l < capacity - 1; ++l) {
+
+page_order[l] = page_order[l + 1];
+
+}
+
+page_order[capacity - 1] = page; // Move the page to the end
+
+break;
+
+}
+
+}
+
+}
+
+}
+
+printf("LRU Page Faults: %d\n", page_faults);
+
+}
+
+// Function to simulate Optimal page replacement algorithm
+
+void optimal(int pages[], int n, int capacity) {
+
+int page_order[MAX_PAGES]; // Array to store the order of pages
+
+int page_faults = 0; // Counter for page faults
+
+for (int i = 0; i < n; ++i) {
+
+int page = pages[i];
+
+int found = 0;
+
+// Check if the page is already in the order array
+
+for (int j = 0; j < capacity; ++j) {
+
+if (page_order[j] == page) {
+
+found = 1;
+
+break;
+
+}
+
+}
+
+if (!found) {
+
+++page_faults;
+
+// If the array is full, find the page to be replaced that will not be used for the longest time
+
+if (capacity == n) {
+
+int future_occurrences[MAX_PAGES];
+
+for (int k = 0; k < capacity; ++k) {
+
+// Find the index of the next occurrence of each page in the remaining sequence
+
+int page_to_find = page_order[k];
+
+int found_index = -1;
+
+for (int l = i + 1; l < n; ++l) {
+
+if (pages[l] == page_to_find) {
+
+found_index = l;
+
+break;
+
+}
+
+}
+
+future_occurrences[k] = (found_index == -1) ? n + 1 : found_index;
+
+}
+
+// Find the page with the maximum future occurrence index
+
+int max_index_page = 0;
+
+for (int k = 1; k < capacity; ++k) {
+
+if (future_occurrences[k] > future_occurrences[max_index_page]) {
+
+max_index_page = k;
+
+}
+
+}
+
+// Replace the page with the maximum future occurrence index
+
+page_order[max_index_page] = page;
+
+} else {
+
+// If the array is not full, add the page to the end of the array
+
+page_order[capacity - 1] = page;
+
+}
+
+}
+
+}
+
+printf("Optimal Page Faults: %d\n", page_faults);
+
+}
+
+int main() {
+
+int pages[MAX_PAGES];
+
+int n, capacity;
+
+// Input the number of pages
+
+printf("Enter the number of pages: ");
+
+scanf("%d", &n);
+
+// Input the page references
+
+printf("Enter the page references:\n");
+
+for (int i = 0; i < n; ++i) {
+
+printf("Page %d: ", i + 1);
+
+scanf("%d", &pages[i]);
+
+}
+
+// Input the memory capacity
+
+printf("Enter the memory capacity: ");
+
+scanf("%d", &capacity);
+
+// Run the page replacement algorithms
+
+fifo(pages, n, capacity);
+
+lru(pages, n, capacity);
+
+optimal(pages, n, capacity);
+
+return 0;
+
+}
